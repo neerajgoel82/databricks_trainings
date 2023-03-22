@@ -39,7 +39,8 @@ display(df)
 
 # COMMAND ----------
 
-# You will need this DataFrame for a later exercise
+from pyspark.sql.functions import explode, split, col
+
 details_df = (df
               .withColumn("items", explode("items"))
               .select("email", "items.item_name")

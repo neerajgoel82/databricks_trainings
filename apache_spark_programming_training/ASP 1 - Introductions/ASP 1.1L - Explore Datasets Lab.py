@@ -35,7 +35,7 @@
 
 # COMMAND ----------
 
-# <FILL_IN>
+# MAGIC %fs ls dbfs:/mnt/dbacademy-users/
 
 # COMMAND ----------
 
@@ -48,7 +48,7 @@
 # COMMAND ----------
 
 # TODO
-files = FILL_IN
+files = dbutils.fs.ls("dbfs:/mnt/dbacademy-users/")
 display(files)
 
 # COMMAND ----------
@@ -64,7 +64,21 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC CREATE TABLE IF NOT EXISTS users 
+# MAGIC USING DELTA 
+# MAGIC OPTIONS (path="${DA.paths.users}");
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS sales 
+# MAGIC USING DELTA 
+# MAGIC OPTIONS (path="${DA.paths.sales}");
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS products 
+# MAGIC USING DELTA 
+# MAGIC OPTIONS (path="${DA.paths.products}");
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS events 
+# MAGIC USING DELTA 
+# MAGIC OPTIONS (path="${DA.paths.events}");
 
 # COMMAND ----------
 
@@ -100,7 +114,7 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC SELECT * FROM products;
 
 # COMMAND ----------
 
@@ -126,7 +140,7 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC SELECT AVG(purchase_revenue_in_usd) AS average_sales from sales;
 
 # COMMAND ----------
 
@@ -155,7 +169,7 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC SELECT distinct(event_name) AS distinct_events FROM events;
 
 # COMMAND ----------
 
