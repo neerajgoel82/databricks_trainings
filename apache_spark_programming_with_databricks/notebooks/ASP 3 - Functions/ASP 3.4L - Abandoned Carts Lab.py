@@ -62,8 +62,13 @@ display(events_df)
 # TODO
 from pyspark.sql.functions import *
 
-converted_users_df = (sales_df.FILL_IN
-                     )
+converted_users_df = (
+    sales_df
+    .select("email")
+    .distinct()
+    .withColumn("converted", lit(True))
+)
+
 display(converted_users_df)
 
 # COMMAND ----------
@@ -78,11 +83,17 @@ expected_columns = ["email", "converted"]
 
 expected_count = 210370
 
-assert converted_users_df.columns == expected_columns, "converted_users_df does not have the correct columns"
+assert (
+    converted_users_df.columns == expected_columns
+), "converted_users_df does not have the correct columns"
 
-assert converted_users_df.count() == expected_count, "converted_users_df does not have the correct number of rows"
+assert (
+    converted_users_df.count() == expected_count
+), "converted_users_df does not have the correct number of rows"
 
-assert converted_users_df.select(col("converted")).first()[0] == True, "converted column not correct"
+assert (
+    converted_users_df.select(col("converted")).first()[0] == True
+), "converted column not correct"
 print("All test pass")
 
 # COMMAND ----------
@@ -98,8 +109,11 @@ print("All test pass")
 # COMMAND ----------
 
 # TODO
-conversions_df = (users_df.FILL_IN
-                 )
+conversions_df = (
+    users_df.join(converted_users_df, "email", "outer")
+    .filter(col("email").isNotNull())
+    .na.fill({"converted": False})
+)
 display(conversions_df)
 
 # COMMAND ----------
@@ -118,11 +132,15 @@ expected_false_count = 572379
 
 assert conversions_df.columns == expected_columns, "Columns are not correct"
 
-assert conversions_df.filter(col("email").isNull()).count() == 0, "Email column contains null"
+assert (
+    conversions_df.filter(col("email").isNull()).count() == 0
+), "Email column contains null"
 
 assert conversions_df.count() == expected_count, "There is an incorrect number of rows"
 
-assert conversions_df.filter(col("converted") == False).count() == expected_false_count, "There is an incorrect number of false entries in converted column"
+assert (
+    conversions_df.filter(col("converted") == False).count() == expected_false_count
+), "There is an incorrect number of false entries in converted column"
 print("All test pass")
 
 # COMMAND ----------
@@ -138,7 +156,10 @@ print("All test pass")
 # COMMAND ----------
 
 # TODO
-carts_df = (events_df.FILL_IN
+carts_df = (
+    events_df.withColumn("items", explode(col("items")))
+    .groupBy("user_id")
+    .agg(collect_set("items.item_id").alias("cart"))
 )
 display(carts_df)
 
@@ -158,7 +179,9 @@ assert carts_df.columns == expected_columns, "Incorrect columns"
 
 assert carts_df.count() == expected_count, "Incorrect number of rows"
 
-assert carts_df.select(col("user_id")).drop_duplicates().count() == expected_count, "Duplicate user_ids present"
+assert (
+    carts_df.select(col("user_id")).drop_duplicates().count() == expected_count
+), "Duplicate user_ids present"
 print("All test pass")
 
 # COMMAND ----------
@@ -172,7 +195,7 @@ print("All test pass")
 # COMMAND ----------
 
 # TODO
-email_carts_df = conversions_df.FILL_IN
+email_carts_df = conversions_df.join(carts_df,"user_id","left")
 display(email_carts_df)
 
 # COMMAND ----------
@@ -183,7 +206,13 @@ display(email_carts_df)
 
 # COMMAND ----------
 
-expected_columns = ["user_id", "email", "user_first_touch_timestamp", "converted", "cart"]
+expected_columns = [
+    "user_id",
+    "email",
+    "user_first_touch_timestamp",
+    "converted",
+    "cart",
+]
 
 expected_count = 782749
 
@@ -193,7 +222,9 @@ assert email_carts_df.columns == expected_columns, "Columns do not match"
 
 assert email_carts_df.count() == expected_count, "Counts do not match"
 
-assert email_carts_df.filter(col("cart").isNull()).count() == expected_cart_null_count, "Cart null counts incorrect from join"
+assert (
+    email_carts_df.filter(col("cart").isNull()).count() == expected_cart_null_count
+), "Cart null counts incorrect from join"
 print("All test pass")
 
 # COMMAND ----------
@@ -208,7 +239,8 @@ print("All test pass")
 # COMMAND ----------
 
 # TODO
-abandoned_carts_df = (email_carts_df.FILL_IN
+abandoned_carts_df = email_carts_df.filter("converted == false").filter(
+    col("cart").isNotNull()
 )
 display(abandoned_carts_df)
 
@@ -220,7 +252,13 @@ display(abandoned_carts_df)
 
 # COMMAND ----------
 
-expected_columns = ["user_id", "email", "user_first_touch_timestamp", "converted", "cart"]
+expected_columns = [
+    "user_id",
+    "email",
+    "user_first_touch_timestamp",
+    "converted",
+    "cart",
+]
 
 expected_count = 204272
 
@@ -238,8 +276,7 @@ print("All test pass")
 # COMMAND ----------
 
 # TODO
-abandoned_items_df = (abandoned_carts_df.FILL_IN
-                     )
+abandoned_items_df = abandoned_carts_df.select("cart").withColumn("items", explode("cart")).groupBy("items").count().sort("items")
 display(abandoned_items_df)
 
 # COMMAND ----------

@@ -61,14 +61,49 @@ dbutils.fs.head(f"{DA.paths.datasets}/people/people-with-dups.txt")
 
 # TODO
 
+from pyspark.sql.functions import *
+
 source_file = f"{DA.paths.datasets}/people/people-with-dups.txt"
 delta_dest_dir = f"{DA.paths.working_dir}/people"
 
 # In case it already exists
 dbutils.fs.rm(delta_dest_dir, True)
 
-# Complete your work here...
+people_df = (
+    spark.read.option("sep", ":")
+    .option("header", True)
+    .option("inferSchema", True)
+    .csv(source_file)
+)
 
+# people_df.show()
+deduped_people_df = (
+    people_df.select(
+        col("*"),
+        lower(col("firstName")).alias("lcFirstName"),
+        lower(col("lastName")).alias("lcLastName"),
+        lower(col("middleName")).alias("lcMiddleName"),
+        translate(col("ssn"), "-", "").alias("ssnNums")
+        # regexp_replace(col("ssn"), "-", "").alias("ssnNums")  # An alternate function to strip the hyphens
+        # regexp_replace(col("ssn"), """^(\d{3})(\d{2})(\d{4})$""", "$1-$2-$3").alias("ssnNums")  # An alternate that adds hyphens if missing
+    )
+    .dropDuplicates(
+        [
+            "lcFirstName",
+            "lcMiddleName",
+            "lcLastName",
+            "ssnNums",
+            "gender",
+            "birthDate",
+            "salary",
+        ]
+    )
+    .drop("lcFirstName", "lcMiddleName", "lcLastName", "ssnNums")
+)
+
+deduped_people_df.count()
+
+deduped_people_df.coalesce(1).write.format("delta").mode("overwrite").save(delta_dest_dir)
 
 # COMMAND ----------
 
@@ -89,6 +124,8 @@ assert verify_delta_format, "Data not written in Delta format"
 assert verify_num_data_files == 1, "Expected 1 data file written"
 
 verify_record_count = spark.read.format("delta").load(delta_dest_dir).count()
+#print(verify_record_count)
+
 assert verify_record_count == 100000, "Expected 100000 records in final result"
 
 del verify_files, verify_delta_format, verify_num_data_files, verify_record_count

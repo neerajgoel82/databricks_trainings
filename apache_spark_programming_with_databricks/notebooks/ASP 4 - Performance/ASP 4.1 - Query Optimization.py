@@ -126,7 +126,7 @@ stupid_df.explain(True)
 
 # COMMAND ----------
 
-jdbc_url = "jdbc:postgresql://35.89.73.255/training"
+jdbc_url = "jdbc:postgresql://server1.training.databricks.com/training"
 
 # Username and Password w/read-only rights
 conn_properties = {
@@ -175,8 +175,11 @@ cached_df = (spark
 
 cached_df.cache()
 filtered_df = cached_df.filter(col("gender") == "M")
-
 filtered_df.explain(True)
+
+
+
+
 
 # COMMAND ----------
 
