@@ -1,0 +1,36 @@
+Following is the list of links that were shared during the training 
+
+Python API reference 
+https://spark.apache.org/docs/latest/api/python/reference/index.html 
+
+Date and timestamp functions 
+https://www.databricks.com/blog/2020/07/22/a-comprehensive-look-at-dates-and-timestamps-in-apache-spark-3-0.html
+
+Joins 
+https://docs.databricks.com/sql/language-manual/sql-ref-syntax-qry-select-join.html
+
+Certifications
+https://www.databricks.com/learn/certification/apache-spark-developer-associate
+
+Practice Exam 
+https://files.training.databricks.com/assessments/practice-exams/PracticeExam-DCADAS3-Pytho[…]821335.1679321010-3a76816f-1c83-4a6b-982d-506b9bc3a607
+
+Databricks vs Spark 
+https://www.databricks.com/spark/comparing-databricks-to-apache-spark
+
+Databricks pricing 
+https://www.databricks.com/product/pricing/product-pricing/instance-types
+
+How to set Spark conf in notebooks 
+https://kb.databricks.com/en_US/data/get-and-set-spark-config 
+
+Structured Streaming 
+https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#continuous-processing
+https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
+
+Delta 
+https://docs.delta.io/latest/concurrency-control.html
+https://www.databricks.com/glossary/medallion-architecture
+Delta.io
+
+
