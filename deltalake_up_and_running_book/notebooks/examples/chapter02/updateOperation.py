@@ -69,8 +69,40 @@ display(spark.sql("DESCRIBE HISTORY patients_delta"))
 # COMMAND ----------
 
 from pyspark.sql.types import *
-numbers_delta_df = spark.sql("SELECT * FROM patients_delta")
-assert numbers_delta_df.count() == 4
+patients_delta_df = spark.sql("SELECT * FROM patients_delta")
+assert patients_delta_df.count() == 4
+print("All test pass")
+
+# COMMAND ----------
+
+# MAGIC %md **3: APPEND MORE PATIENTS**
+
+# COMMAND ----------
+
+# Create the data as an array of tuples
+new_data = [
+    (5, 'P5'),
+    (6, 'P6')
+]
+
+# Create a dataframe from the above array and column
+# definitions
+df = spark.createDataFrame(new_data, columns)
+
+# Write out the dataframe as a parquet file.
+df.coalesce(1).write.format("delta").mode("append").save(delta_path)
+
+
+# COMMAND ----------
+
+# MAGIC %md **3.1: CHECK YOUR WORK**
+
+# COMMAND ----------
+
+from pyspark.sql.types import *
+assert patients_delta_df.count() == 6
+patients_delta_df.show()
+display(spark.sql("DESCRIBE HISTORY patients_delta"))
 print("All test pass")
 
 # COMMAND ----------
