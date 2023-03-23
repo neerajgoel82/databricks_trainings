@@ -1,8 +1,9 @@
 # Databricks notebook source
 # MAGIC %md # Delta Lake Example For Update Operation
 # MAGIC ##### Tasks
-# MAGIC 1. Write numbers data to Delta
-# MAGIC 1. Create table and view version history
+# MAGIC 1. Write few records to Delta Lake
+# MAGIC 1. Add more records to Delta Lake 
+# MAGIC 1. Update a record in Delta Lake 
 
 # COMMAND ----------
 
@@ -95,7 +96,7 @@ df.coalesce(1).write.format("delta").mode("append").save(delta_path)
 
 # COMMAND ----------
 
-# MAGIC %md **3.1: CHECK YOUR WORK**
+# MAGIC %md **2.1: CHECK YOUR WORK**
 
 # COMMAND ----------
 
@@ -125,7 +126,7 @@ print("All test pass")
 
 # COMMAND ----------
 
-# MAGIC %md **4: UPDATE A PATIENTS**
+# MAGIC %md **3: UPDATE A PATIENT**
 
 # COMMAND ----------
 
@@ -142,7 +143,7 @@ deltaTable.update(
 
 # COMMAND ----------
 
-# MAGIC %md **4.1: CHECK YOUR WORK**
+# MAGIC %md **3.1: CHECK YOUR WORK**
 
 # COMMAND ----------
 
