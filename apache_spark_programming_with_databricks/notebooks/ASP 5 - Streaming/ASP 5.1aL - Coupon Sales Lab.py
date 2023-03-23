@@ -36,8 +36,14 @@
 # COMMAND ----------
 
 # TODO
-df = (spark.FILL_IN
-)
+df = (spark
+      .readStream
+      .option("maxFilesPerTrigger", 1)
+      .format("delta")
+      .load(DA.paths.sales)
+     )
+
+#display(df)
 
 # COMMAND ----------
 
@@ -57,9 +63,10 @@ DA.tests.validate_1_1(df)
 
 # COMMAND ----------
 
-# TODO
-coupon_sales_df = (df.FILL_IN
-)
+from pyspark.sql.functions import * 
+coupon_sales_df = (df.withColumn("items", explode(col("items"))).filter(col("items.coupon").isNotNull()))
+
+#display(coupon_sales_df)
 
 # COMMAND ----------
 
@@ -86,7 +93,14 @@ DA.tests.validate_2_1(coupon_sales_df.schema)
 coupons_checkpoint_path = f"{DA.paths.checkpoints}/coupon-sales"
 coupons_output_path = f"{DA.paths.working_dir}/coupon-sales/output"
 
-coupon_sales_query = (coupon_sales_df.FILL_IN)
+coupon_sales_query = (
+    coupon_sales_df.writeStream.outputMode("append")
+    .format("delta")
+    .queryName("coupon_sales")
+    .trigger(processingTime="1 second")
+    .option("checkpointLocation", coupons_checkpoint_path)
+    .start(coupons_output_path)
+)
 
 DA.block_until_stream_is_ready(coupon_sales_query)
 
@@ -107,12 +121,14 @@ DA.tests.validate_3_1(coupon_sales_query)
 # COMMAND ----------
 
 # TODO
-query_id = coupon_sales_query.FILL_IN
+query_id = coupon_sales_query.id
+print(query_id)
 
 # COMMAND ----------
 
 # TODO
-query_status = coupon_sales_query.FILL_IN
+query_status = coupon_sales_query.status
+print(query_status)
 
 # COMMAND ----------
 
@@ -130,7 +146,7 @@ DA.tests.validate_4_1(query_id, query_status)
 # COMMAND ----------
 
 # TODO
-coupon_sales_query.FILL_IN
+coupon_sales_query.stop()
 
 # COMMAND ----------
 
@@ -147,6 +163,8 @@ DA.tests.validate_5_1(coupon_sales_query)
 # COMMAND ----------
 
 # TODO
+written_df = spark.read.format("delta").load(coupons_output_path)
+display(written_df)
 
 # COMMAND ----------
 
