@@ -10,8 +10,7 @@
 
 # COMMAND ----------
 
-# MAGIC %md ### 1. Write few patients information to Delta
-# MAGIC Write **`df`** to **`delta_path`**
+# MAGIC %md ### 1. WRITE FEW ROWS TO DELTA
 
 # COMMAND ----------
 
@@ -39,43 +38,44 @@ df.coalesce(2)        \
   .mode("overwrite")  \
   .save(delta_path)
 
+#Create Hive Table for the data
+spark.sql("DROP TABLE IF EXISTS patients_delta")
+spark.sql("CREATE TABLE patients_delta USING DELTA LOCATION '{}'".format(delta_path))
+
 # COMMAND ----------
 
 # MAGIC %md **1.1: CHECK YOUR WORK**
 
 # COMMAND ----------
 
-assert len(dbutils.fs.ls(delta_path)) > 0
-df = spark.read.format("delta").load(delta_path)
-df.show()
-
-# COMMAND ----------
-
-# MAGIC %md **2: CREATE TABLE FOR DATA**
-
-# COMMAND ----------
-
-spark.sql("DROP TABLE IF EXISTS patients_delta")
-spark.sql("CREATE TABLE patients_delta USING DELTA LOCATION '{}'".format(delta_path))
-
-# COMMAND ----------
-
-display(spark.sql("DESCRIBE HISTORY patients_delta"))
-
-# COMMAND ----------
-
-# MAGIC %md **2.1: CHECK YOUR WORK**
-
-# COMMAND ----------
 
 from pyspark.sql.types import *
-patients_delta_df = spark.sql("SELECT * FROM patients_delta")
-assert patients_delta_df.count() == 4
+
+#See the data 
+read_df = spark.read.format("delta").load(delta_path)
+display(read_df)
+
+#See the version history 
+display(spark.sql("DESCRIBE HISTORY patients_delta"))
+
+#See the files in delta lake folder
+display(dbutils.fs.ls(delta_path))
+
+#See the files in delta log folder
+display(dbutils.fs.ls(f"{delta_path}/_delta_log"))
+
+#See the content of the log file 
+display(spark.read.json(f"{delta_path}/_delta_log/00000000000000000000.json"))
+
+#Check your work
+assert len(dbutils.fs.ls(delta_path)) > 0
+assert read_df.count() == 4
 print("All test pass")
+
 
 # COMMAND ----------
 
-# MAGIC %md **3: APPEND MORE PATIENTS**
+# MAGIC %md **2: APPEND MORE PATIENTS**
 
 # COMMAND ----------
 
@@ -99,11 +99,77 @@ df.coalesce(1).write.format("delta").mode("append").save(delta_path)
 
 # COMMAND ----------
 
+
 from pyspark.sql.types import *
-assert patients_delta_df.count() == 6
-patients_delta_df.show()
+
+#See the data 
+read_df = spark.read.format("delta").load(delta_path)
+display(read_df)
+
+#See the version history 
 display(spark.sql("DESCRIBE HISTORY patients_delta"))
+
+#See the files in delta lake folder
+display(dbutils.fs.ls(delta_path))
+
+#See the files in delta log folder
+display(dbutils.fs.ls(f"{delta_path}/_delta_log"))
+
+#See the content of the log file 
+display(spark.read.json(f"{delta_path}/_delta_log/00000000000000000001.json"))
+
+#Check your work
+assert len(dbutils.fs.ls(delta_path)) > 0
+assert read_df.count() == 6
 print("All test pass")
+
+# COMMAND ----------
+
+# MAGIC %md **4: UPDATE A PATIENTS**
+
+# COMMAND ----------
+
+from delta import *
+from delta.tables import *
+from pyspark.sql.functions import lit
+
+deltaTable = DeltaTable.forPath(spark, delta_path)
+            
+deltaTable.update(
+  condition = "patientId = 1",
+  set = { 'name': lit("p11")}
+)
+
+# COMMAND ----------
+
+# MAGIC %md **4.1: CHECK YOUR WORK**
+
+# COMMAND ----------
+
+
+from pyspark.sql.types import *
+
+#See the data 
+read_df = spark.read.format("delta").load(delta_path)
+display(read_df)
+
+#See the version history 
+display(spark.sql("DESCRIBE HISTORY patients_delta"))
+
+#See the files in delta lake folder
+display(dbutils.fs.ls(delta_path))
+
+#See the files in delta log folder
+display(dbutils.fs.ls(f"{delta_path}/_delta_log"))
+
+#See the content of the log file 
+display(spark.read.json(f"{delta_path}/_delta_log/00000000000000000002.json"))
+
+#Check your work
+assert len(dbutils.fs.ls(delta_path)) > 0
+assert read_df.count() == 6
+print("All test pass")
+
 
 # COMMAND ----------
 
