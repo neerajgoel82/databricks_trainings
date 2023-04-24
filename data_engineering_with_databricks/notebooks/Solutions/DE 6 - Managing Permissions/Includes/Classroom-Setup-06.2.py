@@ -28,3 +28,4 @@ spark.conf.set("da.my_new_catalog", DA.my_new_catalog)
 print(f"Current Catalog: {current_catalog}")
 print(f"Your Catalog:    {DA.my_new_catalog}")
 
+
